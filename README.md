@@ -203,5 +203,3 @@ Proximos passos planejados:
 ## Autor
 
 Desenvolvido por Gustavo.
-
-Se quiser, eu tambem posso adaptar este README para versao bilingue (PT-BR + EN) focada em recrutadores internacionais.
