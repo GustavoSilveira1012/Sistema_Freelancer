@@ -1,6 +1,5 @@
-import { PrismaClient, Client } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { Client } from '@prisma/client';
+import prisma from '../lib/prisma';
 
 export class ClientRepository {
     async create(data: any): Promise<Client> {
