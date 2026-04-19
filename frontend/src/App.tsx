@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPages';
@@ -12,13 +13,14 @@ import Sidebar from './components/Sidebar';
 function App() {
   return (
     <AuthProvider>
+      <Toaster position="top-right" />
       <BrowserRouter>
         <Routes>
-          {/* Rotas públicas */}
+          {/* Public routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
-          {/* Rotas protegidas */}
+          {/* Protected application area */}
           <Route path="/*" element={
             <ProtectedRoute>
               <div className="flex h-screen overflow-hidden">

@@ -1,6 +1,7 @@
 import { LogIn } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import toast from 'react-hot-toast';
 import api from "../services/api";
 import useAuth from "../context/AuthContext";
 
@@ -16,6 +17,7 @@ export default function LoginPage() {
         try {
             const {data} = await api.post('/auth/login', {email, password});
             login(data.token, data.user);
+            toast.success('Login realizado com sucesso!');
             navigate('/dashboard');
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {

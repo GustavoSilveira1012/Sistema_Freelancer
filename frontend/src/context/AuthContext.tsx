@@ -14,6 +14,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  // Keep token persisted across page reloads.
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
 
@@ -30,6 +31,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    // Validate and hydrate user session when a token exists.
     if (token) {
       api.get('/auth/me')
         .then(res => setUser(res.data))
@@ -46,6 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 const useAuth = () => {
   const context = useContext(AuthContext);
+  // Prevent using auth hook outside provider boundary.
   if (!context) throw new Error('useAuth deve ser usado dentro de AuthProvider');
   return context;
 };

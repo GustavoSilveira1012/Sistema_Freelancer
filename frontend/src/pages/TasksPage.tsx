@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
 import type { Task, Project } from '../types';
+import { useSearch } from '../hooks/useSearch';
+import toast from 'react-hot-toast';
 import Modal from '../components/Modal';
 import { Plus, Filter, Edit, Trash2 } from 'lucide-react';
 
 export default function TasksPage() {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
+    const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<Task | null>(null);
     const [filters, setFilters] = useState({ projectId: '', status: '', priority: '' });
+    const { searchTerm, setSearchTerm, filtered: searchedTasks } = useSearch(tasks);
     const [form, setForm] = useState<{
         title: string;
         status: 'TODO' | 'DOING' | 'DONE';
@@ -32,18 +36,23 @@ export default function TasksPage() {
     };
 
     const loadData = async () => {
-        const [taskRes, projectRes] = await Promise.all([
-            api.get('/tasks'),
-            api.get('/projects'),
-        ]);
-        setTasks(taskRes.data);
-        setProjects(projectRes.data);
+        setLoading(true);
+        try {
+            const [taskRes, projectRes] = await Promise.all([
+                api.get('/tasks'),
+                api.get('/projects'),
+            ]);
+            setTasks(taskRes.data);
+            setProjects(projectRes.data);
+        } finally {
+            setLoading(false);
+        }
     };
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => { loadData(); }, []);
 
-    const filteredTasks = tasks.filter(task => {
+    const filteredTasks = searchedTasks.filter(task => {
         if (filters.projectId && task.projectId !== filters.projectId) return false;
         if (filters.status && task.status !== filters.status) return false;
         if (filters.priority && task.priority !== filters.priority) return false;
@@ -58,6 +67,7 @@ export default function TasksPage() {
         } else {
             await api.post('/tasks', form);
         }
+        toast.success(editingTask ? 'Tarefa atualizada!' : 'Tarefa criada!');
 
         setModalOpen(false);
         setEditingTask(null);
@@ -90,6 +100,12 @@ export default function TasksPage() {
         return 'bg-red-500/20 text-red-300';
     };
 
+    const statusClass = (status: Task['status']) => {
+        if (status === 'TODO') return 'bg-zinc-700 text-zinc-200';
+        if (status === 'DOING') return 'bg-blue-500/20 text-blue-300';
+        return 'bg-emerald-500/20 text-emerald-300';
+    };
+
     return (
         <div className="p-8">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
@@ -104,6 +120,16 @@ export default function TasksPage() {
                 >
                     <Plus size={20} /> Nova Tarefa
                 </button>
+            </div>
+
+            <div className="mb-6">
+                <input
+                    type="text"
+                    placeholder="Buscar por nome..."
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    className="bg-zinc-800 rounded-2xl px-5 py-3 w-full md:w-80"
+                />
             </div>
 
             <div className="bg-zinc-900 p-5 rounded-3xl mb-8">
@@ -147,45 +173,55 @@ export default function TasksPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredTasks.map(task => (
-                    <div key={task.id} className="bg-zinc-900 p-6 rounded-3xl">
-                        <div className="flex justify-between items-start gap-3">
-                            <h3 className="font-semibold text-xl">{task.title}</h3>
-                            <span className={`text-xs px-3 py-1 rounded-full ${priorityClass(task.priority)}`}>
-                                {priorityLabel(task.priority)}
-                            </span>
-                        </div>
+            {loading ? (
+                <div className="flex justify-center py-12">
+                    <div className="animate-spin h-8 w-8 border-4 border-emerald-500 border-t-transparent rounded-full"></div>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredTasks.map(task => (
+                        <div key={task.id} className="bg-zinc-900 p-6 rounded-3xl">
+                            <div className="flex justify-between items-start gap-3">
+                                <h3 className="font-semibold text-xl">{task.title}</h3>
+                                <div className="flex flex-col gap-2 items-end">
+                                    <span className={`text-xs px-3 py-1 rounded-full ${statusClass(task.status)}`}>
+                                        {statusLabel(task.status)}
+                                    </span>
+                                    <span className={`text-xs px-3 py-1 rounded-full ${priorityClass(task.priority)}`}>
+                                        {priorityLabel(task.priority)}
+                                    </span>
+                                </div>
+                            </div>
 
-                        <p className="text-zinc-300 mt-3">Projeto: {task.project.name}</p>
-                        <p className="text-zinc-300 mt-1">Status: {statusLabel(task.status)}</p>
+                            <p className="text-zinc-300 mt-3">Projeto: {task.project.name}</p>
 
-                        <div className="flex gap-3 mt-6">
-                            <button
-                                onClick={() => {
-                                    setEditingTask(task);
-                                    setForm({
-                                        title: task.title,
-                                        status: task.status,
-                                        priority: task.priority,
-                                        projectId: task.projectId,
-                                    });
-                                    setModalOpen(true);
-                                }}
-                                className="flex-1 bg-zinc-800 hover:bg-zinc-700 py-3 rounded-2xl flex items-center justify-center gap-2"
-                            >
-                                <Edit size={18} /> Editar
-                            </button>
-                            <button
-                                onClick={() => deleteTask(task.id)}
-                                className="flex-1 bg-red-500/10 text-red-400 hover:bg-red-500/20 py-3 rounded-2xl flex items-center justify-center gap-2"
-                            >
-                                <Trash2 size={18} /> Excluir
-                            </button>
+                            <div className="flex gap-3 mt-6">
+                                <button
+                                    onClick={() => {
+                                        setEditingTask(task);
+                                        setForm({
+                                            title: task.title,
+                                            status: task.status,
+                                            priority: task.priority,
+                                            projectId: task.projectId,
+                                        });
+                                        setModalOpen(true);
+                                    }}
+                                    className="flex-1 bg-zinc-800 hover:bg-zinc-700 py-3 rounded-2xl flex items-center justify-center gap-2"
+                                >
+                                    <Edit size={18} /> Editar
+                                </button>
+                                <button
+                                    onClick={() => deleteTask(task.id)}
+                                    className="flex-1 bg-red-500/10 text-red-400 hover:bg-red-500/20 py-3 rounded-2xl flex items-center justify-center gap-2"
+                                >
+                                    <Trash2 size={18} /> Excluir
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            )}
 
             <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editingTask ? 'Editar Tarefa' : 'Nova Tarefa'}>
                 <form onSubmit={handleSubmit} className="space-y-4">
