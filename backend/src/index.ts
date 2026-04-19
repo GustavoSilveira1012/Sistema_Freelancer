@@ -15,7 +15,10 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Global middlewares
-app.use(cors());
+app.use(cors({
+    origin: process.env.FRONTEND_URL || 'https://freelaflow.vercel.app',
+    credentials: true,
+}));
 app.use(helmet());
 app.use(express.json());
 
