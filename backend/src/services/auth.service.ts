@@ -17,6 +17,7 @@ export class AuthService {
             throw new Error('JWT_SECRET não configurado no ambiente');
         }
 
+        // Generate a signed JWT used by protected routes.
         return jwt.sign(
             {
                 id: user.id,
@@ -29,6 +30,7 @@ export class AuthService {
     }
 
     async register(name: string, email: string, password: string) {
+        // Normalize input to keep auth checks consistent.
         const normalizedName = name?.trim();
         const normalizedEmail = email?.trim().toLowerCase();
 
@@ -59,6 +61,7 @@ export class AuthService {
     }
 
     async login(email: string, password: string) {
+        // Normalize email before lookup to avoid case-sensitive misses.
         const normalizedEmail = email?.trim().toLowerCase();
 
         if (!normalizedEmail || !password) {

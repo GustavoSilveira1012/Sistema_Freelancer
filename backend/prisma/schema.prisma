@@ -13,6 +13,7 @@ model User {
     password String
 
     clients Client[]
+    activityLogs ActivityLog[]
     createdAt   DateTime  @default(now())
     updatedAt   DateTime  @updatedAt
 
@@ -53,6 +54,20 @@ model Project {
     updatedAt   DateTime    @updatedAt
 
     @@map("projects")
+}
+
+model ActivityLog {
+    id      String  @id @default(cuid())
+    userId  String  
+    user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    action  String
+    entity  String
+    description String
+
+    createdAt   DateTime    @default(now())
+
+    @@map("activity_logs")
 }
 
 model Task {
