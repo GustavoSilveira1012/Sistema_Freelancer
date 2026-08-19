@@ -85,6 +85,36 @@ model Task {
     @@map("tasks")
 }
 
+model Subscription {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  stripeCustomerId String?
+  stripeSubscriptionId String? @unique
+
+  plan           Plan     @default(FREE)
+  status         SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Plan {
+  FREE
+  PRO
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIAL
+}
+
 enum ProjectStatus {
     ACTIVE
     COMPLETED

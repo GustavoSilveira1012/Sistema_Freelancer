@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 3001;
 
 // Global middlewares
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'https://freelaflow.vercel.app',
+    origin: process.env.FRONTEND_URL || 'sistema-freelancer-taupe.vercel.app',
     credentials: true,
 }));
 app.use(helmet());
