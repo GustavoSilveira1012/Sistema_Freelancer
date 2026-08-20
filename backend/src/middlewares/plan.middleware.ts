@@ -1,11 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
-import prisma from '../lib/prisma';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export const checkPlan = (requiredPlan: 'PRO' | 'PREMIUM') => {
   return async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user!.id;
 
-    const sub = await prisma.subscription.findUnique({ where: { userId } });
+    const sub = await (prisma as any).subscription.findUnique({ where: { userId } });
 
     if (!sub || sub.status !== 'ACTIVE') {
       return res.status(403).json({ error: 'Assinatura necessária' });

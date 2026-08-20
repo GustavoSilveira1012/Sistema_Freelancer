@@ -1,4 +1,4 @@
-import prisma from '../lib/prisma';
+import { PrismaClient } from '@prisma/client';
 
 type ActivityLog = {
   id: string;
@@ -9,13 +9,15 @@ type ActivityLog = {
   createdAt: Date;
 };
 
+const prisma = new PrismaClient();
+
 export class ActivityRepository {
   async create(data: { userId: string; action: string; entity: string; description: string }): Promise<ActivityLog> {
-    return prisma.activityLog.create({ data });
+    return (prisma as any).activityLog.create({ data });
   }
 
   async findAllByUser(userId: string): Promise<ActivityLog[]> {
-    return prisma.activityLog.findMany({
+    return (prisma as any).activityLog.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
       take: 10,
