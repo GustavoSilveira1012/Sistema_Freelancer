@@ -54,7 +54,7 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    api.get('/activity').then(res => setActivities(res.data));
+    api.get('/activities').then(res => setActivities(res.data));
   }, []);
 
   return (
