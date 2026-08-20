@@ -1,12 +1,14 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkPlan = void 0;
-const client_1 = require("@prisma/client");
-const prisma = new client_1.PrismaClient();
+const prisma_1 = __importDefault(require("../lib/prisma"));
 const checkPlan = (requiredPlan) => {
     return async (req, res, next) => {
         const userId = req.user.id;
-        const sub = await prisma.subscription.findUnique({ where: { userId } });
+        const sub = await prisma_1.default.subscription.findUnique({ where: { userId } });
         if (!sub || sub.status !== 'ACTIVE') {
             return res.status(403).json({ error: 'Assinatura necessária' });
         }
