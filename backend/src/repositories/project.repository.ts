@@ -14,7 +14,7 @@ export class ProjectRepository {
     });
   }
 
-  async findById(id: string): Promise<Project | null> {
+  async findById(id: string) {
     return prisma.project.findUnique({
       where: { id },
       include: { client: true, tasks: true },

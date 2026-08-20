@@ -14,6 +14,7 @@ class AuthService {
         if (!secret) {
             throw new Error('JWT_SECRET não configurado no ambiente');
         }
+        // Generate a signed JWT used by protected routes.
         return jsonwebtoken_1.default.sign({
             id: user.id,
             name: user.name,
@@ -21,6 +22,7 @@ class AuthService {
         }, secret, { expiresIn: '7d' });
     }
     async register(name, email, password) {
+        // Normalize input to keep auth checks consistent.
         const normalizedName = name?.trim();
         const normalizedEmail = email?.trim().toLowerCase();
         if (!normalizedName || !normalizedEmail || !password) {
@@ -44,6 +46,7 @@ class AuthService {
         return { user: publicUser, token };
     }
     async login(email, password) {
+        // Normalize email before lookup to avoid case-sensitive misses.
         const normalizedEmail = email?.trim().toLowerCase();
         if (!normalizedEmail || !password) {
             throw new Error('Email e senha são obrigatórios');

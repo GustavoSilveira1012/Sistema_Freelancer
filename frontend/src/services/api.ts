@@ -1,7 +1,13 @@
 import axios from 'axios';
 
+const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
+
+if (import.meta.env.PROD && !configuredApiUrl) {
+    throw new Error('VITE_API_URL precisa estar configurada em produção.');
+}
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL  || 'http://localhost:3001',
+    baseURL: (configuredApiUrl || 'http://localhost:3001').replace(/\/$/, ''),
 })
 
 api.interceptors.request.use(config => {

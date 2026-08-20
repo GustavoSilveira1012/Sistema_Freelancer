@@ -14,6 +14,7 @@ model User {
 
     clients Client[]
     activityLogs ActivityLog[]
+    subscription Subscription?
     createdAt   DateTime  @default(now())
     updatedAt   DateTime  @updatedAt
 

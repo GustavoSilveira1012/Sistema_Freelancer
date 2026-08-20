@@ -13,10 +13,14 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
 // Global middlewares
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'sistema-freelancer-taupe.vercel.app',
+    origin: allowedOrigins,
     credentials: true,
 }));
 app.use(helmet());
@@ -32,6 +36,10 @@ app.use('/activities', activityRoutes);
 
 app.get('/', (req, res) => {
     res.json({message: 'FreelaFloww API rodando com sucesso!'})
+});
+
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok' });
 });
 
 // Centralized error handling must be registered after routes
