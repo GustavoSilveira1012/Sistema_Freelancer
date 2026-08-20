@@ -1,16 +1,14 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ActivityRepository = void 0;
-const prisma_1 = __importDefault(require("../lib/prisma"));
+const client_1 = require("@prisma/client");
+const prisma = new client_1.PrismaClient();
 class ActivityRepository {
     async create(data) {
-        return prisma_1.default.activityLog.create({ data });
+        return prisma.activityLog.create({ data });
     }
     async findAllByUser(userId) {
-        return prisma_1.default.activityLog.findMany({
+        return prisma.activityLog.findMany({
             where: { userId },
             orderBy: { createdAt: 'desc' },
             take: 10,
