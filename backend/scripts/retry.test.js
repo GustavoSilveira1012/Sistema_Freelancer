@@ -41,3 +41,22 @@ test('throws the last error after exhausting attempts', async () => {
   assert.deepEqual(waits, [10]);
 });
 
+test('stops retrying when the operation is cancelled', async () => {
+  const failure = new Error('startup was cancelled');
+  let attempts = 0;
+  const waits = [];
+
+  await assert.rejects(retry(async () => {
+    attempts += 1;
+    throw failure;
+  }, {
+    attempts: 6,
+    delayMs: 10,
+    shouldRetry: () => false,
+    wait: async (milliseconds) => waits.push(milliseconds),
+  }), (error) => error === failure);
+
+  assert.equal(attempts, 1);
+  assert.deepEqual(waits, []);
+});
+
