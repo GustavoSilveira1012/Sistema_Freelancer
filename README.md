@@ -190,6 +190,35 @@ Frontend:
 - `npm run preview`
 - `npm run lint`
 
+## Deploy público (Vercel + Render)
+
+### Backend no Render
+
+Configure o serviço web com a pasta raiz `backend`, o comando de build `npm run build` e o comando de início `npm start`. O início aplica as migrações do Prisma com até seis tentativas e espera crescente para absorver indisponibilidades temporárias do banco.
+
+Em Environment Variables, configure:
+
+- `DATABASE_URL`: copie a **Internal Database URL** no painel do PostgreSQL do Render. O serviço web e o banco precisam estar na mesma conta e região. Confirme também que o banco está disponível e dentro do prazo do plano.
+- `FRONTEND_URL`: use a origem exata publicada pela Vercel, por exemplo `https://sistema-freelancer-taupe.vercel.app`. Origens adicionais podem ser separadas por vírgula.
+- `JWT_SECRET`: defina um valor aleatório, único e forte. Não o coloque no GitHub.
+- `PORT`: o Render fornece essa variável automaticamente.
+
+Se o serviço registrar `P1001` durante as migrações, o banco não está alcançável pelo serviço. Confirme o estado do banco, recopie a URL interna e valide a região da API e do banco. As tentativas automáticas não corrigem banco expirado, URL antiga ou região incompatível.
+
+### Frontend na Vercel
+
+Importe o repositório na raiz para usar o `vercel.json` existente e configure `VITE_API_URL` com a URL pública base do backend no Render, sem `/auth/register` e sem barra final. Essa variável é incluída no build do Vite; faça um novo deploy depois de alterá-la.
+
+Depois do deploy, `GET <URL_DO_BACKEND>/health` deve retornar `{ status: "ok" }`. O cadastro depende também de o backend alcançar o PostgreSQL e aceitar a origem em `FRONTEND_URL`.
+
+### Limites do plano gratuito
+
+Serviços web gratuitos do Render podem entrar em repouso após 15 minutos sem tráfego e levar cerca de um minuto para iniciar novamente. Bancos PostgreSQL gratuitos têm outro limite: expiram após 30 dias e ficam inacessíveis até upgrade; após o período de carência de 14 dias, são apagados. Para uma demonstração pública duradoura, mantenha banco e API em planos que não expirem.
+
+Veja a documentação atual do [Render Postgres](https://render.com/docs/postgresql-creating-connecting) e dos [planos gratuitos do Render](https://render.com/docs/free).
+
+Não versione arquivos `.env` com valores reais. Se uma credencial já foi commitada, troque-a no serviço correspondente; apagar o arquivo em um commit novo não remove cópias do histórico do Git.
+
 ## Status do Projeto
 
 MVP funcional em evolucao.
