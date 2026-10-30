@@ -5,12 +5,13 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "node node_modules/prisma/build/index.js generate && tsc",
-    "start": "node node_modules/prisma/build/index.js migrate deploy && node dist/index.js",
+    "start": "node scripts/start.js",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:deploy": "node node_modules/prisma/build/index.js migrate deploy",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "test": "node --test scripts/retry.test.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.7.0",
