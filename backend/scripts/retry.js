@@ -6,6 +6,7 @@ async function retry(operation, options = {}) {
     delayMs = 2000,
     wait = sleep,
     onRetry = () => {},
+    shouldRetry = () => true,
   } = options;
 
   if (!Number.isInteger(attempts) || attempts < 1) {
@@ -24,7 +25,7 @@ async function retry(operation, options = {}) {
     } catch (error) {
       lastError = error;
 
-      if (attempt === attempts) {
+      if (attempt === attempts || !shouldRetry(error, attempt)) {
         break;
       }
 
