@@ -3,6 +3,7 @@ const path = require('node:path');
 const { retry } = require('./retry');
 
 let activeChild;
+let shutdownRequested = false;
 
 function runNodeScript(scriptPath, args = []) {
   return new Promise((resolve, reject) => {
@@ -33,6 +34,7 @@ function runNodeScript(scriptPath, args = []) {
 
 for (const signal of ['SIGINT', 'SIGTERM']) {
   process.on(signal, () => {
+    shutdownRequested = true;
     if (activeChild) {
       activeChild.kill(signal);
     } else {
@@ -50,6 +52,7 @@ async function start() {
     await retry(() => runNodeScript(prismaCli, ['migrate', 'deploy']), {
       attempts,
       delayMs: 2000,
+      shouldRetry: () => !shutdownRequested,
       onRetry(_error, { attempt, nextAttempt, waitMs }) {
         console.warn(
           `Database migrations failed on attempt ${attempt}/${attempts}; ` +
@@ -58,6 +61,11 @@ async function start() {
       },
     });
   } catch (error) {
+    if (shutdownRequested) {
+      process.exitCode = 0;
+      return;
+    }
+
     console.error(
       `Could not apply Prisma migrations after ${attempts} attempts. ` +
       `Check DATABASE_URL and database availability. ${error.message}`,
@@ -66,11 +74,18 @@ async function start() {
     return;
   }
 
+  if (shutdownRequested) {
+    process.exitCode = 0;
+    return;
+  }
+
   try {
     await runNodeScript(serverEntry);
   } catch (error) {
-    console.error(`Backend process failed: ${error.message}`);
-    process.exitCode = 1;
+    if (!shutdownRequested) {
+      console.error(`Backend process failed: ${error.message}`);
+    }
+    process.exitCode = shutdownRequested ? 0 : 1;
   }
 }
 
